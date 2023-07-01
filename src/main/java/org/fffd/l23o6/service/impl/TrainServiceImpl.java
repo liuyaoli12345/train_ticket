@@ -118,6 +118,7 @@ public class TrainServiceImpl implements TrainService
         // TODO: edit train info, please refer to `addTrain` above 2023-6-30 by 刘尧力
         //select the train by id and delete 这个方法如果更改消息出错，会把原来火车信息删除，可能有点问题
         trainDao.delete(trainDao.getReferenceById(id));
+
         addTrain(name, routeId, type, date, arrivalTimes, departureTimes);
     }
 
