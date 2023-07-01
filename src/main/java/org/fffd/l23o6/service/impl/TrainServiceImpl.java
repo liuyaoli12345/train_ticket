@@ -19,6 +19,7 @@ import org.fffd.l23o6.pojo.vo.train.TrainDetailVO;
 import org.fffd.l23o6.service.TrainService;
 import org.fffd.l23o6.util.strategy.train.GSeriesSeatStrategy;
 import org.fffd.l23o6.util.strategy.train.KSeriesSeatStrategy;
+import org.fffd.l23o6.util.strategy.train.TrainSeatStrategy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -76,8 +77,54 @@ public class TrainServiceImpl implements TrainService
         int end = routeEntity.getStationIds().indexOf(endStationId);
         myTrainVO.setDepartureTime(TrainEntity.getDepartureTimes().get(start));
         myTrainVO.setArrivalTime(TrainEntity.getArrivalTimes().get(end));
+        //myTrainVO.setTicketInfo(TrainEntity.get);
+        int type = TrainEntity.getTrainType().getText().equals("高铁") ? 1 : 2;
+        myTrainVO.setTicketInfo(genTicketInfoList(TrainEntity.getSeats(),type,start, end));
         return myTrainVO;
     }
+
+    // type1 = G, type2 = K
+    // 两种列车都采用了硬编码，高铁是3,12,15,普快是8,12,16,20
+    private boolean check(boolean[][] seats, int startStation, int endStation, int tar){
+        for (int i=startStation; i<endStation; i++){
+            if (!seats[i][tar])
+                return false;
+        }
+        return true;
+    }
+
+    private TicketInfo genTicketInfo(boolean[][] seats, String type, int startStation, int endStation, TrainSeatStrategy.SeatType seatType){
+        TicketInfo info = new TicketInfo();
+        info.setType(type);
+        int count=0;
+//        for (int i=start; i<end; i++){
+//            if (check(seats,startStation,endStation,i))
+//                count++;
+//        }
+        info.setCount((GSeriesSeatStrategy.INSTANCE.getLeftSeatCount(startStation,endStation,seats).get(seatType)));
+        //TODO:采用特定的价格策略生成车票的价格 2023-7-1 by 刘尧力
+        info.setPrice(100);
+        return info;
+    }
+
+    private List<TicketInfo> genTicketInfoList(boolean[][] seats, int type, int startStation, int endStation){
+        List<TicketInfo> infos = new ArrayList<>();
+        if (type == 1){
+            infos.add(genTicketInfo(seats,"商务座",startStation,endStation, GSeriesSeatStrategy.GSeriesSeatType.BUSINESS_SEAT));
+            infos.add(genTicketInfo(seats,"一等座",startStation, endStation, GSeriesSeatStrategy.GSeriesSeatType.FIRST_CLASS_SEAT));
+            infos.add(genTicketInfo(seats,"二等座", startStation, endStation, GSeriesSeatStrategy.GSeriesSeatType.SECOND_CLASS_SEAT));
+            infos.add(genTicketInfo(seats, "无座", startStation,endStation, GSeriesSeatStrategy.GSeriesSeatType.NO_SEAT));
+        } else if (type==2){
+            infos.add(genTicketInfo(seats, "软卧", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.SOFT_SLEEPER_SEAT));
+            infos.add(genTicketInfo(seats, "硬卧", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.HARD_SLEEPER_SEAT));
+            infos.add(genTicketInfo(seats, "软座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.SOFT_SEAT));
+            infos.add(genTicketInfo(seats, "硬座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.HARD_SEAT));
+            infos.add(genTicketInfo(seats, "无座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.NO_SEAT));
+        }
+        return infos;
+    }
+
+
 
     @Override
     public List<AdminTrainVO> listTrainsAdmin()

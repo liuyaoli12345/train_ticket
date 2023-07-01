@@ -25,7 +25,7 @@ public class GSeriesSeatStrategy extends TrainSeatStrategy {
     private GSeriesSeatStrategy() {
 
         int counter = 0;
-
+        // 3,12,15
         for (String s : Arrays.asList("1车1A","1车1C","1车1F")) {
             BUSINESS_SEAT_MAP.put(counter++, s);
         }
