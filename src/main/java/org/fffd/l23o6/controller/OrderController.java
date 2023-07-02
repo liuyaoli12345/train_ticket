@@ -1,5 +1,6 @@
 package org.fffd.l23o6.controller;
 
+import com.alipay.api.AlipayApiException;
 import io.github.lyc8503.spring.starter.incantation.exception.BizException;
 import io.github.lyc8503.spring.starter.incantation.exception.CommonErrorType;
 import io.github.lyc8503.spring.starter.incantation.pojo.CommonResponse;
@@ -42,7 +43,7 @@ public class OrderController {
     }
 
     @PatchMapping("order/{orderId}")
-    public CommonResponse<?> patchOrder(@PathVariable("orderId") Long orderId, @Valid @RequestBody PatchOrderRequest request) {
+    public CommonResponse<?> patchOrder(@PathVariable("orderId") Long orderId, @Valid @RequestBody PatchOrderRequest request) throws AlipayApiException {
 
         switch (request.getStatus()) {
             case PAID:

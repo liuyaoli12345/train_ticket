@@ -10,7 +10,7 @@ import jakarta.annotation.Nullable;
 
 public class KSeriesSeatStrategy extends TrainSeatStrategy {
     public static final KSeriesSeatStrategy INSTANCE = new KSeriesSeatStrategy();
-     
+
     private final Map<Integer, String> SOFT_SLEEPER_SEAT_MAP = new HashMap<>();
     private final Map<Integer, String> HARD_SLEEPER_SEAT_MAP = new HashMap<>();
     private final Map<Integer, String> SOFT_SEAT_MAP = new HashMap<>();
@@ -66,13 +66,61 @@ public class KSeriesSeatStrategy extends TrainSeatStrategy {
 
 
     public @Nullable String allocSeat(int startStationIndex, int endStationIndex, KSeriesSeatType type, boolean[][] seatMap) {
+        //TODO:
         //endStationIndex - 1 = upper bound
+        int start=0;
+        if(type == KSeriesSeatType.HARD_SLEEPER_SEAT){
+            start = TYPE_MAP.get(KSeriesSeatType.SOFT_SLEEPER_SEAT).size();
+        }
+        if(type == KSeriesSeatType.SOFT_SEAT){
+            start = TYPE_MAP.get(KSeriesSeatType.SOFT_SLEEPER_SEAT).size() + TYPE_MAP.get(KSeriesSeatType.HARD_SLEEPER_SEAT).size();
+        }
+        if(type == KSeriesSeatType.HARD_SEAT){
+            start = TYPE_MAP.get(KSeriesSeatType.SOFT_SLEEPER_SEAT).size() + TYPE_MAP.get(KSeriesSeatType.HARD_SLEEPER_SEAT).size() + TYPE_MAP.get(KSeriesSeatType.SOFT_SEAT).size();
+        }
+        for(int i = start;i<start+TYPE_MAP.get(type).size();i++){
+            boolean isEmpty = true;
+            for(int j=startStationIndex;j<endStationIndex;j++){
+                if(seatMap[j][i]){
+                    isEmpty = false;
+                    break;
+                }
+            }
+            if(isEmpty){
+                for(int j=startStationIndex;j<endStationIndex;j++){
+                    seatMap[j][i] = true;
+                }
+                return TYPE_MAP.get(type).get(i);
+            }
+        }
         return null;
     }
 
     public Map<KSeriesSeatType, Integer> getLeftSeatCount(int startStationIndex, int endStationIndex, boolean[][] seatMap) {
-        return null;
+        //TODO:
+        Map<KSeriesSeatStrategy.KSeriesSeatType,Integer> leftMap = new HashMap<>();
+        int i = 0;
+        for(KSeriesSeatStrategy.KSeriesSeatType type: KSeriesSeatStrategy.KSeriesSeatType.values()){
+            if(type == KSeriesSeatStrategy.KSeriesSeatType.NO_SEAT){
+                break;
+            }
+            int leftCount = TYPE_MAP.get(type).size();
+            int beforeCount = i;
+            for(;i<beforeCount+TYPE_MAP.get(type).size();i++){
+                for(int j=startStationIndex;j<endStationIndex;j++){
+                    if(seatMap[j][i]){
+                        leftCount--;
+                        break;
+                    }
+                }
+            }
+            leftMap.put(type,leftCount);
+        }
+        //return Collections.unmodifiableMap(leftMap)的意思是将leftMap封装为一个不可修改的Map，使其变为只读，以避免在后续的操作中对其进行修改。
+        //这样做的好处是可以保证代码的稳定性和安全性，防止可能的异常或错误。如果对封装后的Map进行插入、删除、更新等操作，就会抛出UnsupportedOperationException异常。
+        return Collections.unmodifiableMap(leftMap);
     }
+
 
     public boolean[][] initSeatMap(int stationCount) {
         return new boolean[stationCount - 1][SOFT_SLEEPER_SEAT_MAP.size() + HARD_SLEEPER_SEAT_MAP.size() + SOFT_SEAT_MAP.size() + HARD_SEAT_MAP.size()];

@@ -19,6 +19,7 @@ import org.fffd.l23o6.pojo.vo.train.TrainDetailVO;
 import org.fffd.l23o6.service.TrainService;
 import org.fffd.l23o6.util.strategy.train.GSeriesSeatStrategy;
 import org.fffd.l23o6.util.strategy.train.KSeriesSeatStrategy;
+import org.fffd.l23o6.util.strategy.train.TrainSeatStrategy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,8 @@ public class TrainServiceImpl implements TrainService
         int end = routeEntity.getStationIds().indexOf(endStationId);
         myTrainVO.setDepartureTime(TrainEntity.getDepartureTimes().get(start));
         myTrainVO.setArrivalTime(TrainEntity.getArrivalTimes().get(end));
+        int type = TrainEntity.getTrainType().getText().equals("高铁") ? 1 : 2;
+        myTrainVO.setTicketInfo(getTicketInfoList(TrainEntity.getSeats(),type,start, end));
         return myTrainVO;
     }
 
@@ -126,5 +129,35 @@ public class TrainServiceImpl implements TrainService
     public void deleteTrain(Long id)
     {
         trainDao.deleteById(id);
+    }
+
+
+    private TicketInfo getTicketInfo(boolean[][] seats, String type, int startStation, int endStation, TrainSeatStrategy.SeatType seatType, int cmd){
+        TicketInfo info = new TicketInfo();
+        info.setType(type);
+        if (cmd == 1)
+            info.setCount((GSeriesSeatStrategy.INSTANCE.getLeftSeatCount(startStation,endStation,seats).get(seatType)));
+        else
+            info.setCount((KSeriesSeatStrategy.INSTANCE.getLeftSeatCount(startStation,endStation,seats).get(seatType)));
+        //TODO:采用特定的价格策略生成车票的价格 2023-7-1 by 刘尧力
+        info.setPrice(100);
+        return info;
+    }
+
+    private List<TicketInfo> getTicketInfoList(boolean[][] seats, int type, int startStation, int endStation){
+        List<TicketInfo> infos = new ArrayList<>();
+        if (type == 1){
+            infos.add(getTicketInfo(seats,"商务座",startStation,endStation, GSeriesSeatStrategy.GSeriesSeatType.BUSINESS_SEAT, 1));
+            infos.add(getTicketInfo(seats,"一等座",startStation, endStation, GSeriesSeatStrategy.GSeriesSeatType.FIRST_CLASS_SEAT, 1));
+            infos.add(getTicketInfo(seats,"二等座", startStation, endStation, GSeriesSeatStrategy.GSeriesSeatType.SECOND_CLASS_SEAT, 1));
+            infos.add(getTicketInfo(seats, "无座", startStation,endStation, GSeriesSeatStrategy.GSeriesSeatType.NO_SEAT, 1));
+        } else if (type==2){
+            infos.add(getTicketInfo(seats, "软卧", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.SOFT_SLEEPER_SEAT, 2));
+            infos.add(getTicketInfo(seats, "硬卧", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.HARD_SLEEPER_SEAT, 2));
+            infos.add(getTicketInfo(seats, "软座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.SOFT_SEAT, 2));
+            infos.add(getTicketInfo(seats, "硬座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.HARD_SEAT, 2));
+            infos.add(getTicketInfo(seats, "无座", startStation,endStation, KSeriesSeatStrategy.KSeriesSeatType.NO_SEAT, 2));
+        }
+        return infos;
     }
 }
