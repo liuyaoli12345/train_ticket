@@ -55,7 +55,12 @@ public class TrainServiceImpl implements TrainService
         this.endStationId = endStationId;
         List<RouteEntity> routes = routeDao.findAll(Sort.by(Sort.Direction.ASC, "name"));
         List<Long> filteredRouteIds = routes.stream()
-                .filter(route -> route.getStationIds().containsAll(List.of(startStationId, endStationId)))
+                .filter(route -> {
+                    List<Long> stationIds = route.getStationIds();
+                    int startIndex = stationIds.indexOf(startStationId);
+                    int endIndex = stationIds.indexOf(endStationId);
+                    return startIndex != -1 && endIndex != -1 && startIndex < endIndex;
+                })
                 .map(RouteEntity::getId).toList();
         List<TrainEntity> filteredTrains = trainDao.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
                 .filter(train -> train.getDate().equals(date) && filteredRouteIds.contains(train.getRouteId())).toList();
