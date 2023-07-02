@@ -48,4 +48,14 @@ public class UserServiceImpl implements UserService {
         }
         userDao.save(user.setIdn(idn).setName(name).setPhone(phone).setType(type));
     }
+
+    @Override
+    public void changeCredit(String username, long credit){
+        UserEntity user = userDao.findByUsername(username);
+        if(user == null){
+            throw new BizException(CommonErrorType.ILLEGAL_ARGUMENTS, "用户不存在");
+        }
+        userDao.save(user.setCredit(credit));
+    }
+
 }

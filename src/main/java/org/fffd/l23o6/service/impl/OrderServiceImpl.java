@@ -1,7 +1,9 @@
 package org.fffd.l23o6.service.impl;
 
 import java.nio.channels.ScatteringByteChannel;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.alipay.api.AlipayApiException;
@@ -32,6 +34,16 @@ public class OrderServiceImpl implements OrderService {
     private final UserDao userDao;
     private final TrainDao trainDao;
     private final RouteDao routeDao;
+
+    private static Map<Long, Double> accountByCredit = new HashMap<>();
+
+    static {
+        accountByCredit.put(0L, 0D);
+        accountByCredit.put(1000L, 0.001);
+        accountByCredit.put(3000L, 0.0025);
+        accountByCredit.put(10000L, 0.0045);
+//        accountByCredit.put(50000L, 0.2)
+    }
 
     public Long createOrder(String username, Long trainId, Long fromStationId, Long toStationId, String seatType,
             Long seatNumber) {
