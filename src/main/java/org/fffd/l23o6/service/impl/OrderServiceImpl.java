@@ -64,10 +64,19 @@ public class OrderServiceImpl implements OrderService {
         List<OrderEntity> orders = orderDao.findByUserId(userId);
         orders.sort((o1,o2)-> o2.getId().compareTo(o1.getId()));
         return orders.stream().map(order -> {
+            System.out.println(order);
             TrainEntity train = trainDao.findById(order.getTrainId()).get();
             RouteEntity route = routeDao.findById(train.getRouteId()).get();
             int startIndex = route.getStationIds().indexOf(order.getDepartureStationId());
             int endIndex = route.getStationIds().indexOf(order.getArrivalStationId());
+            System.out.println(OrderVO.builder().id(order.getId()).trainId(order.getTrainId())
+                    .seat(order.getSeat()).status(order.getStatus().getText())
+                    .createdAt(order.getCreatedAt())
+                    .startStationId(order.getDepartureStationId())
+                    .endStationId(order.getArrivalStationId())
+                    .departureTime(train.getDepartureTimes().get(startIndex))
+                    .arrivalTime(train.getArrivalTimes().get(endIndex))
+                    .build());
             return OrderVO.builder().id(order.getId()).trainId(order.getTrainId())
                     .seat(order.getSeat()).status(order.getStatus().getText())
                     .createdAt(order.getCreatedAt())
