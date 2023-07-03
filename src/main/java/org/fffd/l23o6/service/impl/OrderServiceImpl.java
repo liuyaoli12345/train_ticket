@@ -1,8 +1,13 @@
 package org.fffd.l23o6.service.impl;
 
+import java.nio.channels.ScatteringByteChannel;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.alipay.api.AlipayApiException;
+import lombok.Data;
 import org.fffd.l23o6.dao.OrderDao;
 import org.fffd.l23o6.dao.RouteDao;
 import org.fffd.l23o6.dao.TrainDao;
@@ -14,6 +19,7 @@ import org.fffd.l23o6.pojo.entity.RouteEntity;
 import org.fffd.l23o6.pojo.entity.TrainEntity;
 import org.fffd.l23o6.pojo.vo.order.OrderVO;
 import org.fffd.l23o6.service.OrderService;
+import org.fffd.l23o6.util.strategy.payment.AliPaymentStrategy;
 import org.fffd.l23o6.util.strategy.train.GSeriesSeatStrategy;
 import org.fffd.l23o6.util.strategy.train.KSeriesSeatStrategy;
 import org.springframework.stereotype.Service;
@@ -28,6 +34,16 @@ public class OrderServiceImpl implements OrderService {
     private final UserDao userDao;
     private final TrainDao trainDao;
     private final RouteDao routeDao;
+
+    private static Map<Long, Double> accountByCredit = new HashMap<>();
+
+    static {
+        accountByCredit.put(0L, 0D);
+        accountByCredit.put(1000L, 0.001);
+        accountByCredit.put(3000L, 0.0025);
+        accountByCredit.put(10000L, 0.0045);
+//        accountByCredit.put(50000L, 0.2)
+    }
 
     public Long createOrder(String username, Long trainId, Long fromStationId, Long toStationId, String seatType,
             Long seatNumber) {
@@ -104,7 +120,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    public void cancelOrder(Long id) {
+    public void cancelOrder(Long id) throws AlipayApiException {
         OrderEntity order = orderDao.findById(id).get();
 
         if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELLED) {
@@ -117,13 +133,18 @@ public class OrderServiceImpl implements OrderService {
         orderDao.save(order);
     }
 
-    public void payOrder(Long id) {
+
+    public void payOrder(Long id) throws AlipayApiException {
+        System.err.println("awgawg");
         OrderEntity order = orderDao.findById(id).get();
 
         if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
             throw new BizException(BizError.ILLEAGAL_ORDER_STATUS);
         }
 
+        AliPaymentStrategy aliPaymentStrategy = new AliPaymentStrategy();
+        aliPaymentStrategy.pay(100);
+        //WechatStrategy.generateQRCode(id.toString(), 100, "w", "", "ee", "aw", "1");
         // TODO: use payment strategy to pay!
         // TODO: update user's credits, so that user can get discount next time
 
@@ -131,4 +152,7 @@ public class OrderServiceImpl implements OrderService {
         orderDao.save(order);
     }
 
+    public Float getPrice(){
+        return 100F;
+    }
 }

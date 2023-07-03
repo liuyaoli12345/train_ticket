@@ -2,6 +2,7 @@ package org.fffd.l23o6.service;
 
 import java.util.List;
 
+import com.alipay.api.AlipayApiException;
 import org.fffd.l23o6.pojo.vo.order.OrderVO;
 
 public interface OrderService {
@@ -9,6 +10,6 @@ public interface OrderService {
     List<OrderVO> listOrders(String username);
     OrderVO getOrder(Long id);
 
-    void cancelOrder(Long id);
-    void payOrder(Long id);
+    void cancelOrder(Long id) throws AlipayApiException;
+    void payOrder(Long id) throws AlipayApiException;
 }

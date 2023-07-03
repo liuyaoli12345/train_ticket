@@ -10,7 +10,7 @@ import jakarta.annotation.Nullable;
 
 public class KSeriesSeatStrategy extends TrainSeatStrategy {
     public static final KSeriesSeatStrategy INSTANCE = new KSeriesSeatStrategy();
-     
+
     private final Map<Integer, String> SOFT_SLEEPER_SEAT_MAP = new HashMap<>();
     private final Map<Integer, String> HARD_SLEEPER_SEAT_MAP = new HashMap<>();
     private final Map<Integer, String> SOFT_SEAT_MAP = new HashMap<>();

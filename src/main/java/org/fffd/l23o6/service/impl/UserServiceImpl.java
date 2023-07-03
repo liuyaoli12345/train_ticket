@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userDao.save(UserEntity.builder().username(username).password(BCrypt.hashpw(password))
-                .name(name).idn(idn).phone(phone).type(type).build());
+                .name(name).idn(idn).credit(0L).phone(phone).type(type).build());
     }
 
     @Override
@@ -48,4 +48,14 @@ public class UserServiceImpl implements UserService {
         }
         userDao.save(user.setIdn(idn).setName(name).setPhone(phone).setType(type));
     }
+
+    @Override
+    public void changeCredit(String username, long credit){
+        UserEntity user = userDao.findByUsername(username);
+        if(user == null){
+            throw new BizException(CommonErrorType.ILLEGAL_ARGUMENTS, "用户不存在");
+        }
+        userDao.save(user.setCredit(credit));
+    }
+
 }
