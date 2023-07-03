@@ -143,8 +143,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         AliPaymentStrategy aliPaymentStrategy = new AliPaymentStrategy();
-        String payInfo = aliPaymentStrategy.prepay(100);
-        System.out.println(payInfo);
+        aliPaymentStrategy.pay(100);
         //WechatStrategy.generateQRCode(id.toString(), 100, "w", "", "ee", "aw", "1");
         // TODO: use payment strategy to pay!
         // TODO: update user's credits, so that user can get discount next time
