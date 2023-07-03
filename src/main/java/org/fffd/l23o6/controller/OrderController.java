@@ -34,6 +34,7 @@ public class OrderController {
     @GetMapping("order")
     public CommonResponse<List<OrderVO>> listOrders(){
         StpUtil.checkLogin();
+        System.out.println("调用listOrders");
         return CommonResponse.success(orderService.listOrders(StpUtil.getLoginIdAsString()));
     }
 
